@@ -1,4 +1,4 @@
-use std::{collections::VecDeque, fmt};
+use std::{collections::VecDeque, fmt, usize};
 
 /*
    Execution starts here
@@ -62,8 +62,33 @@ fn factorial_numbers(n: i32) -> Vec<i32> {
     return return_vector;
 }
 
+// the whole 'T: Ord + Copy' bit is saying: it can be of any type but it must be orderable (Ord)
+// and easily copyable without having to move data (hence the Copy part)
 fn run_length_encoding<T: Ord + Copy>(list: &Vec<T>) -> Vec<(i32, T)> {
-    vec![]
+    // the first index of a pair is the num of occurances, second index is the actual number
+    let mut return_vector: Vec<(i32, T)> = vec![]; // vector of tuples
+    let mut used_nums: Vec<T> = vec![]; // the already visited numbers
+    for i in list {
+        if used_nums.contains(i) {
+            continue; // skip this number if we've already done it
+        }
+        let mut curr_count: i32 = 0;
+        for j in list {
+            if j == i {
+                curr_count += 1;
+            }
+        }
+        // make sure to remember we did this number
+        used_nums.push(*i);
+
+        // add to the return vector
+        return_vector.push((curr_count, *i));
+        // You use * to derefrence a variable (so for example
+        // it's no longer a pass by refrence type &T and now it's of type T because it's been
+        // derefrenced)
+    }
+
+    return return_vector;
 }
 
 fn forms_chain<T: Ord>(list: &[Vec<T>]) -> bool {
