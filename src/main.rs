@@ -13,7 +13,17 @@ fn main() {
 }
 
 fn make_element_generator<T>(list: Vec<T>) -> impl FnMut() -> Option<T> {
-    || None
+    let mut list_copy: Vec<T> = list;
+    // use the move keyword to put list_copy into the scope of the invoker function
+    move || {
+        if list_copy.is_empty() {
+            // test cases use .unwrap_or(0) to turn None into 0 so don't need to worry about that
+            return None; // need to return nothing if it's empty
+        }
+
+        let curr = list_copy.remove(0);
+        return Some(curr); // need to say some to guarentee that it's not none
+    }
 }
 
 /*
