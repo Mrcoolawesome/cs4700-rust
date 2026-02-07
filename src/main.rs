@@ -12,6 +12,12 @@ fn main() {
     test_forms_chain();
 }
 
+/*
+ * Input: List of vectors with a generic type
+ * Output: Function that returns either None or something of type T
+ * This function will take an input vector, and reutrn a function that will return the next element
+ * of the given vector for each time its ran.
+ */
 fn make_element_generator<T>(list: Vec<T>) -> impl FnMut() -> Option<T> {
     let mut list_copy: Vec<T> = list;
     // use the move keyword to put list_copy into the scope of the invoker function
