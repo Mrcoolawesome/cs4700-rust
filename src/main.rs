@@ -82,6 +82,7 @@ fn factorial_numbers(n: i32) -> Vec<i32> {
  * instances of a given element were found in the given list.
  */
 fn run_length_encoding<T: Ord + Copy>(list: &Vec<T>) -> Vec<(i32, T)> {
+    // if the given vector is empty then return an empty vector
     if list.len() == 0 {
         return vec![];
     }
