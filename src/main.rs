@@ -21,8 +21,8 @@ fn make_element_generator<T>(list: Vec<T>) -> impl FnMut() -> Option<T> {
             return None; // need to return nothing if it's empty
         }
 
-        let curr = list_copy.remove(0);
-        return Some(curr); // need to say some to guarentee that it's not none
+        let curr_element = list_copy.remove(0);
+        return Some(curr_element); // need to say some to guarentee that it's not none
     }
 }
 
@@ -39,7 +39,8 @@ fn pair_up<T: Copy>(list: &Vec<T>) -> Vec<Vec<T>> {
         // this does len() - 1 automatically
         if i + 1 < list.len() {
             return_vector.push(vec![list[i], list[i + 1]]);
-        } else {
+        } else if i + 1 == list.len() && list.len() % 2 != 0 {
+            // if the amount of elements is odd and if this is the final element
             return_vector.push(vec![list[i]]);
         }
     }
@@ -61,48 +62,99 @@ fn factorial_numbers(n: i32) -> Vec<i32> {
     // borrowing is in rust) and not by pass by value which is the default
     fn recurse_factorial(k: i32, list: &mut Vec<i32>) -> i32 {
         // return the current factorial value
-        list.push(k);
         if k == 0 {
             return 1;
         }
-        return k * recurse_factorial(k - 1, list);
+        let factorial_value = k * recurse_factorial(k - 1, list);
+        list.push(factorial_value);
+        return factorial_value;
     }
     // run the recurse_factorial function by letting the recursive function borrow it
     recurse_factorial(n, &mut return_vector);
     return return_vector;
 }
 
-// the whole 'T: Ord + Copy' bit is saying: it can be of any type but it must be orderable (Ord)
-// and easily copyable without having to move data (hence the Copy part)
+/*
+ * Input: a list with a generic type T that is orderable and copyable
+ *      Note: copyable means it can be easily copied without moving data around
+ * Output: Vector of tuples that say how many times a given element occured in the given list
+ * This function will take in a list, and return a vector holding tuples that contain how many
+ * instances of a given element were found in the given list.
+ */
 fn run_length_encoding<T: Ord + Copy>(list: &Vec<T>) -> Vec<(i32, T)> {
+    if list.len() == 0 {
+        return vec![];
+    }
     // the first index of a pair is the num of occurances, second index is the actual number
     let mut return_vector: Vec<(i32, T)> = vec![]; // vector of tuples
-    let mut used_nums: Vec<T> = vec![]; // the already visited numbers
-    for i in list {
-        if used_nums.contains(i) {
-            continue; // skip this number if we've already done it
-        }
+    let mut prev_element: &T = &list[0]; // make the previous element the first in the given vector
+    for i in 0..list.len() {
         let mut curr_count: i32 = 0;
-        for j in list {
-            if j == i {
-                curr_count += 1;
-            }
-        }
-        // make sure to remember we did this number
-        used_nums.push(*i);
+        let mut keep_going: bool = true; // keep track of consecutiveness
+        let mut j: usize = i; // usize is the type used to index lists
+        let curr_element: &T = &list[i];
 
+        // don't wanna make a new entry if we're still in a 'chain'.
+        // this only applies to every element except the beginning since theres no previous to the
+        // beginning element.
+        if i > 0 && prev_element == curr_element {
+            continue;
+        }
+        while keep_going {
+            let temp_element: &T = &list[j];
+            if temp_element == curr_element {
+                curr_count += 1;
+            } else {
+                keep_going = false;
+            }
+
+            // check if we've reached the end of the list
+            if j == list.len() - 1 {
+                keep_going = false;
+            }
+            j += 1; // keep track of iteration
+        }
         // add to the return vector
-        return_vector.push((curr_count, *i));
+        return_vector.push((curr_count, *curr_element));
         // You use * to derefrence a variable (so for example
         // it's no longer a pass by refrence type &T and now it's of type T because it's been
         // derefrenced)
+
+        // set the previous element to be the current one
+        prev_element = curr_element;
     }
 
     return return_vector;
 }
 
+/*
+ * Input: List of vector refrences that hold an orderable type.
+ * Output: Boolean that returns true if the tail element of each vector in the list equals the head
+ * element of the adjacent (i + 1) vector in the given list for each vector not adjacent to the end
+ * of the list.
+ * This function takes in a list of vectors that hold a comparible/orderable type and will return
+ * true if the tail of each vector in the list equals the head element of the adjacent vector (the vector
+ * in the i + 1 index) for each vector in the list excluding the vector at the end of the list.
+ */
 fn forms_chain<T: Ord>(list: &[Vec<T>]) -> bool {
-    false
+    // does len() - 1 automatically
+    for i in 0..list.len() {
+        if i + 1 == list.len() {
+            continue; // skip this iteration since there's no more chaining to be done
+        }
+
+        // we need to use a refrence to the vectors in the list to get them because otherwise we'd
+        // be borrowing them and yanking them out of the memory that holds 'list'
+        let curr_vector: &Vec<T> = &list[i];
+        let next_vector: &Vec<T> = &list[i + 1];
+
+        if curr_vector.last() != next_vector.first() {
+            return false; // just immediately return false becuase a chain cannot be made
+        }
+    }
+
+    // if we made it this far without returning false then a chain is possible
+    return true;
 }
 
 /*
