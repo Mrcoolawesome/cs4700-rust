@@ -41,7 +41,7 @@ fn make_element_generator<T>(list: Vec<T>) -> impl FnMut() -> Option<T> {
 */
 fn pair_up<T: Copy>(list: &Vec<T>) -> Vec<Vec<T>> {
     let mut return_vector: Vec<Vec<T>> = vec![];
-    for i in 0..list.len() {
+    for i in (0..list.len()).step_by(2) {
         // this does len() - 1 automatically
         if i + 1 < list.len() {
             return_vector.push(vec![list[i], list[i + 1]]);
